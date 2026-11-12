@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>야마가타우리교회 · 자막 송출</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gowun+Batang:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap">
+<style>
+html,body{height:100%;margin:0;overflow:hidden;background:#00ff00;cursor:default}
+#box{position:fixed;inset:0}
+#tip{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:rgba(0,0,0,.75);color:#fff;font:14px "Noto Sans KR",sans-serif;padding:8px 16px;border-radius:20px;transition:opacity .6s}
+body.idle{cursor:none}
+</style>
+</head>
+<body>
+<div id="box"><div id="stage"></div></div>
+<div id="tip">더블클릭 또는 F 키 = 전체 화면 · 이 창을 프로젝터/스위처로 나가는 화면에 놓으세요</div>
+<script src="caption.js"></script>
+<script>
+const stage=document.getElementById('stage'),box=document.getElementById('box'),tip=document.getElementById('tip');
+capBuild(stage);let st=null;
+const fit=()=>capFit(stage,box);addEventListener('resize',fit);fit();
+addEventListener('message',e=>{if(!e.data||e.data.type!=='cap')return;st=e.data.st;document.body.style.background=capBgColor(st);capApply(stage,st);capCamera(stage,st).catch(()=>{})});
+if(opener)opener.postMessage({type:'cap-ready'},'*');
+const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+addEventListener('dblclick',fs);addEventListener('keydown',e=>{if(e.key==='f'||e.key==='F')fs()});
+setTimeout(()=>tip.style.opacity=0,6000);
+let idle;addEventListener('mousemove',()=>{document.body.classList.remove('idle');clearTimeout(idle);idle=setTimeout(()=>document.body.classList.add('idle'),2500)});
+if(document.fonts)document.fonts.ready.then(()=>st&&capApply(stage,st));
+</script>
+</body>
+</html>

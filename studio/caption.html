@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>야마가타우리교회 스튜디오 · 성경 자막</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gowun+Batang:wght@400;700&family=Nanum+Pen+Script&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Noto+Serif+KR:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="ui.css">
+<style>
+#pvbox{flex:1;min-height:0;position:relative;background:#05080e;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+#onair{position:absolute;top:10px;left:10px;z-index:2;font-size:12px;font-weight:900;padding:3px 10px;border-radius:12px;background:#333;color:#aaa}
+#onair.on{background:var(--red);color:#fff}
+.ctl{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr;gap:8px;flex:none}
+.ctl button{padding:12px;font-size:15px;font-weight:700}
+.slide{display:block;width:100%;text-align:left;margin-bottom:6px;padding:8px 10px;position:relative}
+.slide b{display:block;color:var(--acc);font-size:12.5px}
+.slide span{display:block;font-size:12.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slide.on{outline:2px solid var(--acc);background:#2a3044}
+.slide.on span{color:var(--txt)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><img src="logo.png" alt=""></div>
+  <div><h1>야마가타우리교회 <span>스튜디오</span></h1><small>성경 자막 · 크로마키 송출</small></div>
+  <div class="sp"></div>
+  <nav><a href="야마가타우리교회 스튜디오.html">배경 영상</a><a class="on" href="caption.html">성경 자막</a><a href="interpret.html" id="navInt">동시통역</a><a href="live.html">방송</a></nav>
+</header>
+<main>
+<aside>
+  <h3>자막 목록</h3>
+  <div id="list"></div>
+  <div class="grid g3"><button id="add">＋ 새 자막</button><button id="dup">복제</button><button id="del">삭제</button></div>
+  <h3>출처 (성경 장절)</h3>
+  <input type="text" id="ref" placeholder="예) 요한복음 3:16">
+  <h3>본문 (한국어)</h3>
+  <textarea id="ko" rows="4"></textarea>
+  <h3>本文 (日本語) — 선택</h3>
+  <textarea id="ja" rows="3"></textarea>
+  <h3>여러 구절 한꺼번에 넣기</h3>
+  <textarea id="bulk" rows="4" placeholder="빈 줄로 구절을 나눕니다.&#10;각 구절의 첫 줄 = 출처&#10;둘째 줄부터 = 본문 (일본어는 「JA:」 로 시작)"></textarea>
+  <button class="sec" id="bulkAdd" style="margin-top:6px">목록에 추가</button>
+</aside>
+
+<section class="stagecol">
+  <div id="pvbox"><div id="onair">송출 꺼짐</div><div id="stage"></div></div>
+  <div class="ctl">
+    <button id="live" class="pri">● 자막 내보내기</button>
+    <button id="prev">◀ 이전</button>
+    <button id="next">다음 ▶</button>
+    <button id="openOut">🖥 송출 창 열기</button>
+  </div>
+  <p class="hint" style="margin:0">단축키: 스페이스 = 자막 보이기/숨기기 · ← → = 이전/다음 자막 &nbsp;|&nbsp; <span id="msg"></span></p>
+</section>
+
+<aside class="right">
+  <h3>배경 (키 색)</h3>
+  <div class="grid g3" id="bgs"></div>
+  <div id="customRow" class="grid" style="margin-top:6px"><input type="color" data-s="bgCustom"></div>
+  <div id="camRow" style="margin-top:6px"><select id="cams"></select><p class="hint">카메라 화면 위에 자막을 직접 합쳐서 내보냅니다.</p></div>
+  <p class="hint" id="bgHint"></p>
+  <h3>위치</h3>
+  <div class="grid g3" id="layouts"></div>
+  <div class="grid g3" id="aligns" style="margin-top:6px"></div>
+  <div class="row"><label>폭</label><input type="range" data-k="width" min="30" max="96"><output></output></div>
+  <div class="row"><label>여백</label><input type="range" data-k="margin" min="10" max="240"><output></output></div>
+  <h3>글자</h3>
+  <select data-k="font">
+    <option value="Noto Sans KR">본고딕</option><option value="Noto Serif KR">본명조</option><option value="Gowun Batang">고운바탕</option>
+    <option value="Black Han Sans">검은고딕</option><option value="Do Hyeon">도현</option><option value="Nanum Pen Script">나눔 손글씨 펜</option>
+  </select>
+  <div class="row"><label>크기</label><input type="range" data-k="size" min="28" max="140"><output></output></div>
+  <div class="row"><label>외곽선</label><input type="range" data-k="stroke" min="0" max="20"><output></output></div>
+  <div class="row"><label>그림자</label><input type="range" data-k="shadow" min="0" max="60"><output></output></div>
+  <div class="grid g4" style="margin-top:6px">
+    <input type="color" data-k="color" title="본문 색"><input type="color" data-k="jaColor" title="일본어 색"><input type="color" data-k="refColor" title="출처 색"><input type="color" data-k="strokeColor" title="외곽선 색">
+  </div>
+  <p class="hint">본문 · 일본어 · 출처 · 외곽선 색</p>
+  <label class="chk"><input type="checkbox" data-k="showJa"> 일본어 본문 함께 표시</label>
+  <label class="chk"><input type="checkbox" data-k="showRef"> 출처 표시</label>
+  <h3>바탕 상자 · 장식</h3>
+  <div class="row"><label>상자 진하기</label><input type="range" data-k="boxOp" min="0" max="100"><output></output></div>
+  <div class="grid g2"><input type="color" data-k="box" title="상자 색"><input type="color" data-k="accentColor" title="장식 선 색"></div>
+  <label class="chk"><input type="checkbox" data-k="accent"> 장식 선</label>
+  <h3>나타나는 방식</h3>
+  <div class="grid g3" id="anims"></div>
+  <button class="sec" id="reset" style="margin-top:14px">디자인 처음 설정으로</button>
+</aside>
+</main>
+<script src="caption.js"></script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],KEY='yamagata-caption-v1';
+const clone=o=>JSON.parse(JSON.stringify(o));
+let S=clone(CAP_DEF);
+try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d){Object.assign(S,d,{d:Object.assign(S.d,d.d||{})});if(!S.slides||!S.slides.length)S.slides=clone(CAP_DEF.slides)}}catch(e){}
+S.live=false;
+const stage=$('#stage'),box=$('#pvbox');capBuild(stage);
+let outWin=null;
+const msg=t=>$('#msg').textContent=t;
+function send(){if(outWin&&!outWin.closed)outWin.postMessage({type:'cap',st:S},'*')}
+function choice(sel,list,getv,setv){const b=$(sel);b.innerHTML='';list.forEach(([v,l])=>{const e=document.createElement('button');e.textContent=l;if(getv()===v)e.className='on';e.onclick=()=>{setv(v);update()};b.appendChild(e)})}
+function listUI(){const L=$('#list');L.innerHTML='';S.slides.forEach((s,i)=>{const b=document.createElement('button');b.className='slide'+(i===S.cur?' on':'');
+  const t=document.createElement('b');t.textContent=(i+1)+'. '+(s.ref||'(출처 없음)');const p=document.createElement('span');p.textContent=(s.ko||s.ja||'').replace(/\n/g,' ');b.append(t,p);
+  b.onclick=()=>{S.cur=i;update()};L.appendChild(b)})}
+function update(skipFields){
+ S.cur=Math.max(0,Math.min(S.cur,S.slides.length-1));const sl=S.slides[S.cur];
+ if(!skipFields){$('#ref').value=sl.ref;$('#ko').value=sl.ko;$('#ja').value=sl.ja}
+ listUI();
+ choice('#bgs',[['green','초록 (크로마키)'],['blue','파랑'],['black','검정 (루마키)'],['custom','직접 고르기'],['camera','카메라 합성']],()=>S.bg,v=>S.bg=v);
+ choice('#layouts',[['top','위'],['center','가운데'],['lower','아래']],()=>S.d.layout,v=>S.d.layout=v);
+ choice('#aligns',[['left','왼쪽'],['center','가운데'],['right','오른쪽']],()=>S.d.align,v=>S.d.align=v);
+ choice('#anims',[['fade','서서히'],['slide','밀려서'],['none','바로']],()=>S.d.anim,v=>S.d.anim=v);
+ $$('[data-k]').forEach(e=>{const v=S.d[e.dataset.k];if(e.type==='checkbox')e.checked=!!v;else e.value=v;const o=e.parentElement.querySelector('output');if(o)o.textContent=v});
+ $$('[data-s]').forEach(e=>e.value=S[e.dataset.s]);
+ $('#customRow').style.display=S.bg==='custom'?'':'none';$('#camRow').style.display=S.bg==='camera'?'':'none';
+ $('#bgHint').textContent={green:'스위처·OBS의 크로마키에서 초록색을 빼면 글자만 카메라 위에 남습니다.',blue:'파란 옷·배경이 없을 때 사용합니다.',black:'루마키(밝기 키)용입니다. 그림자를 써도 깨끗하게 빠집니다.',custom:'스위처에서 지정한 키 색에 맞추세요.',camera:''}[S.bg];
+ $('#live').textContent=S.live?'■ 자막 숨기기':'● 자막 내보내기';$('#live').className=S.live?'live':'pri';
+ $('#onair').textContent=S.live?'자막 송출 중':'송출 꺼짐';$('#onair').classList.toggle('on',S.live);
+ capApply(stage,S);capFit(stage,box);send();
+ capCamera(stage,S).then(()=>{if(S.bg==='camera')listCams()}).catch(e=>msg('카메라를 열 수 없습니다: '+(e.message||e.name)));
+ try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+async function listCams(){try{const ds=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput'),sel=$('#cams');
+ if(sel.options.length===ds.length&&sel.dataset.ok)return;sel.innerHTML='';ds.forEach((d,i)=>{const o=document.createElement('option');o.value=d.deviceId;o.textContent=d.label||('카메라 '+(i+1));sel.appendChild(o)});
+ if(S.camId)sel.value=S.camId;sel.dataset.ok=ds.some(d=>d.label)?'1':''}catch(e){}}
+$('#cams').onchange=e=>{S.camId=e.target.value;update()};
+['ref','ko','ja'].forEach(k=>$('#'+k).addEventListener('input',e=>{S.slides[S.cur][k]=e.target.value;update(true)}));
+$$('[data-k]').forEach(e=>e.addEventListener('input',()=>{S.d[e.dataset.k]=e.type==='checkbox'?e.checked:e.type==='range'?+e.value:e.value;update(true)}));
+$$('[data-s]').forEach(e=>e.addEventListener('input',()=>{S[e.dataset.s]=e.value;update(true)}));
+$('#add').onclick=()=>{S.slides.splice(S.cur+1,0,{ref:'',ko:'',ja:''});S.cur++;update();$('#ref').focus()};
+$('#dup').onclick=()=>{S.slides.splice(S.cur+1,0,clone(S.slides[S.cur]));S.cur++;update()};
+$('#del').onclick=()=>{if(S.slides.length<=1){S.slides=[{ref:'',ko:'',ja:''}]}else S.slides.splice(S.cur,1);update()};
+$('#bulkAdd').onclick=()=>{const blocks=$('#bulk').value.split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);if(!blocks.length)return;
+ blocks.forEach(b=>{const ls=b.split('\n'),ref=ls.length>1?ls.shift().trim():'',ko=[],ja=[];ls.forEach(l=>/^JA[:：]/i.test(l.trim())?ja.push(l.trim().replace(/^JA[:：]\s*/i,'')):ko.push(l));S.slides.push({ref,ko:ko.join('\n'),ja:ja.join('\n')})});
+ S.cur=S.slides.length-blocks.length;$('#bulk').value='';update();msg(blocks.length+'개 구절을 추가했습니다.')};
+$('#live').onclick=()=>{S.live=!S.live;update(true)};
+$('#prev').onclick=()=>{S.cur--;update()};$('#next').onclick=()=>{S.cur++;update()};
+$('#openOut').onclick=()=>{if(outWin&&!outWin.closed){outWin.focus();return}outWin=window.open('output.html','yamagata-output','width=1280,height=720');if(!outWin)msg('팝업이 막혀 있습니다. 주소창 오른쪽에서 팝업을 허용해 주세요.')};
+$('#reset').onclick=()=>{S.d=clone(CAP_DEF.d);update()};
+addEventListener('message',e=>{if(e.data&&e.data.type==='cap-ready')send()});
+/* 「방송」 화면에서 자막을 넘기면 여기도 따라간다 */
+addEventListener('storage',e=>{if(e.key!==KEY||!e.newValue)return;try{const d=JSON.parse(e.newValue);if(d.cur!==S.cur||d.live!==S.live){S.cur=d.cur;S.live=d.live;update()}}catch(_){}});
+addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.code==='Space'){e.preventDefault();$('#live').click()}else if(e.key==='ArrowRight')$('#next').click();else if(e.key==='ArrowLeft')$('#prev').click()});
+new ResizeObserver(()=>capFit(stage,box)).observe(box);
+if(/Electron/.test(navigator.userAgent))$('#navInt').onclick=e=>{e.preventDefault();window.open('interpret.html')};
+update();if(document.fonts)document.fonts.ready.then(()=>update(true));
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>방송 화면 — 야마가타우리교회 스튜디오</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden;cursor:none}canvas{width:100vw;height:100vh;object-fit:contain;display:block}
+#tip{position:fixed;left:0;right:0;bottom:16px;text-align:center;color:#fff;font:14px system-ui;opacity:.7;transition:opacity 1s;pointer-events:none}</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<div id="tip">두 번 누르거나 F 를 누르면 전체 화면이 됩니다</div>
+<script>
+/* 그림은 「방송」 화면이 이 창의 캔버스에 직접 그려 넣는다 */
+const full=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+addEventListener('dblclick',full);addEventListener('keydown',e=>{if(e.key==='f'||e.key==='F'||e.key==='ㄹ')full()});
+setTimeout(()=>document.getElementById('tip').style.opacity=0,4000);
+</script>
+</body>
+</html>

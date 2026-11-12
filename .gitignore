@@ -1,0 +1,11 @@
+# 이 저장소에는 「야마가타우리교회 스튜디오」 프로그램만 올린다 (주보 파일은 제외)
+/*
+!/.gitignore
+!/README.md
+!/studio/
+!/studio-app/
+studio-app/node_modules/
+studio-app/dist/
+studio-app/app/
+studio-app/build/icon.iconset/
+.DS_Store

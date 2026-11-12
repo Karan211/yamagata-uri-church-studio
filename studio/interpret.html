@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>야마가타우리교회 스튜디오 · 동시통역</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="ui.css">
+<style>
+#view{flex:1;min-height:0;position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--line);container-type:size;background:#00ff00}
+#sub{position:absolute;left:0;right:0;padding:4cqh 5cqw;display:flex;flex-direction:column;gap:1.2cqh;text-align:center}
+#sub.bottom{bottom:0}#sub.top{top:0}#sub.center{top:50%;transform:translateY(-50%)}
+.e .dst{font-weight:900;line-height:1.3;paint-order:stroke fill;word-break:keep-all;overflow-wrap:anywhere}
+.e .src{font-weight:700;line-height:1.3;opacity:.92;paint-order:stroke fill;word-break:keep-all;overflow-wrap:anywhere}
+.e.old{opacity:.6}.e.interim .dst,.e.interim .src{opacity:.75}
+.big{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.big button{padding:14px 6px;font-size:15px;font-weight:900}
+#status{font-size:13px;padding:8px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--line);margin:8px 0}
+#log{font-size:12.5px;max-height:34vh;overflow-y:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px}
+#log p{margin:0 0 8px}#log i{color:var(--mut);font-style:normal;display:block}
+body.out header,body.out aside,body.out .under{display:none}
+body.out main{display:block}body.out .stagecol{padding:0;height:100vh}body.out #view{border:0;border-radius:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><img src="logo.png" alt=""></div>
+  <div><h1>야마가타우리교회 <span>스튜디오</span></h1><small>한국어 ⇄ 日本語 동시통역 · 同時通訳</small></div>
+  <div class="sp"></div>
+  <nav><a href="야마가타우리교회 스튜디오.html">배경 영상</a><a href="caption.html">성경 자막</a><a class="on" href="interpret.html">동시통역</a><a href="live.html">방송</a></nav>
+</header>
+<main>
+<aside>
+  <h3>통역 방향</h3>
+  <div class="big" id="dirs"></div>
+  <h3>시작 / 정지</h3>
+  <button class="pri sec" id="start">🎙 통역 시작</button>
+  <div id="status">준비 중…</div>
+  <h3>번역 방식</h3>
+  <div class="grid g3" id="engs"></div>
+  <p class="hint" id="engNow"></p>
+  <h3>직접 입력해서 통역</h3>
+  <textarea id="manual" rows="2" placeholder="글로 입력한 뒤 Enter (광고·공지 등)"></textarea>
+  <h3>음성으로 읽어 주기</h3>
+  <label class="chk"><input type="checkbox" data-k="tts"> 통역 결과를 음성으로 말하기</label>
+  <select id="voice"></select>
+  <div class="row"><label>빠르기</label><input type="range" data-k="rate" min="0.7" max="1.6" step="0.05"><output></output></div>
+  <div class="row"><label>음량</label><input type="range" data-k="vol" min="0" max="1" step="0.05"><output></output></div>
+  <label class="chk"><input type="checkbox" data-k="pauseMic"> 음성이 나오는 동안 마이크 듣기 멈춤</label>
+  <p class="hint">통역 음성이 스피커로 나와 마이크에 다시 들어가면 엉뚱하게 인식됩니다. 이어폰·별도 출력으로 내보내거나 위 항목을 켜세요.</p>
+  <h3>기록</h3>
+  <div id="log"></div>
+  <div class="grid g2" style="margin-top:6px"><button id="saveLog">기록 저장 (txt)</button><button id="clear">화면 지우기</button></div>
+</aside>
+
+<section class="stagecol">
+  <div id="view"><div id="sub" class="bottom"></div></div>
+  <div class="under grid g2"><button id="openOut" style="padding:12px;font-weight:700">🖥 자막 송출 창 열기</button><button id="full" style="padding:12px;font-weight:700">⛶ 이 화면을 전체 화면으로</button></div>
+</section>
+
+<aside class="right">
+  <h3>자막 내용</h3>
+  <div class="grid g3" id="shows"></div>
+  <div class="row"><label>줄 수</label><input type="range" data-k="lines" min="1" max="4" step="1"><output></output></div>
+  <div class="row"><label>글자 크기</label><input type="range" data-k="size" min="3" max="14" step="0.5"><output></output></div>
+  <div class="row"><label>외곽선</label><input type="range" data-k="stroke" min="0" max="12" step="1"><output></output></div>
+  <h3>위치</h3>
+  <div class="grid g3" id="poss"></div>
+  <h3>배경 (키 색)</h3>
+  <div class="grid g2" id="bgs"></div>
+  <h3>색</h3>
+  <div class="grid g2"><input type="color" data-k="color" title="통역문 색"><input type="color" data-k="srcColor" title="원문 색"></div>
+  <p class="hint">통역문 · 원문 색</p>
+  <h3>안내</h3>
+  <p class="hint">음성 인식은 Chrome 의 기능을 사용하며 인터넷 연결이 필요합니다(소리가 Google 음성 인식 서비스로 전송됩니다).</p>
+  <p class="hint">번역 「자동」은 Chrome 내장 번역을 먼저 쓰고, 안 되면 Google 웹 번역으로 넘어갑니다. Google 웹 번역은 인식된 문장을 Google 로 보내며, 공식 보장이 없는 무료 창구라 사용량이 많으면 막힐 수 있습니다.</p>
+  <p class="hint">한 번에 한 방향만 듣습니다. 말하는 언어가 바뀌면 위의 방향 버튼을 눌러 주세요 (단축키: 1 = 한→일, 2 = 일→한).</p>
+</aside>
+</main>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],KEY='yamagata-interpret-v1';
+const OUT=new URLSearchParams(location.search).has('out');if(OUT)document.body.classList.add('out');
+const DIRS={kj:{src:'ko',dst:'ja',rec:'ko-KR',tts:'ja',label:'한국어 → 日本語'},jk:{src:'ja',dst:'ko',rec:'ja-JP',tts:'ko',label:'日本語 → 한국어'}};
+const BG={green:'#00ff00',blue:'#0000ff',black:'#000000',dark:'#101827'};
+let C={dir:'kj',show:'both',lines:2,size:7,stroke:4,pos:'bottom',bg:'green',color:'#ffffff',srcColor:'#ffe9a8',engine:'auto',tts:true,rate:1.1,vol:1,pauseMic:false,voice:{ja:'',ko:''}};
+try{Object.assign(C,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+let entries=[],interim=null,running=false,rec=null,micPaused=false,outWin=null,seq=0;
+const D=()=>DIRS[C.dir],status=(t,w)=>{const e=$('#status');e.textContent=t;e.classList.toggle('warn',!!w)};
+
+/* ───── 자막 그리기 (조정 화면과 송출 창 공용) ───── */
+function draw(v){const sub=$('#sub'),c=v.C;$('#view').style.background=BG[c.bg];sub.className=c.pos;sub.innerHTML='';
+ v.items.forEach(it=>{const e=document.createElement('div');e.className='e'+(it.interim?' interim':'')+(it.old?' old':'');const st=c.stroke>0?`${c.stroke/10}cqh #000`:'0';
+  const mk=(cls,t,col,k)=>{if(!t)return;const d=document.createElement('div');d.className=cls;d.textContent=t;d.style.color=col;d.style.fontSize=c.size*k+'cqh';d.style.webkitTextStroke=st;e.appendChild(d)};
+  if(c.show!=='dst')mk('src',it.src,c.srcColor,c.show==='src'?1:.62);if(c.show!=='src')mk('dst',it.dst,c.color,1);if(e.children.length)sub.appendChild(e)})}
+function view(){const fin=entries.slice(-(interim?Math.max(0,C.lines-1):C.lines)).map((e,i,a)=>({src:e.src,dst:e.dst,old:i<a.length-1||!!interim}));if(interim)fin.push({src:interim.src,dst:interim.dst,interim:true});return{C,items:fin}}
+/* 앱의 「방송」 화면에도 같은 자막을 보낸다 (앱 밖에서 열었으면 조용히 무시) */
+let busT=0,busOff=false;function bus(v){if(busOff||OUT)return;clearTimeout(busT);busT=setTimeout(()=>fetch('/api/bus/int',{method:'POST',body:JSON.stringify(v)}).then(r=>{if(r.status===404||r.status===501)busOff=true}).catch(()=>{}),60)}
+function render(){const v=view();draw(v);bus(v);if(outWin&&!outWin.closed)outWin.postMessage({type:'int',v},'*')}
+if(OUT){addEventListener('message',e=>{if(e.data&&e.data.type==='int')draw(e.data.v)});if(opener)opener.postMessage({type:'int-ready'},'*');
+ const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();addEventListener('dblclick',fs);addEventListener('keydown',e=>{if(e.key==='f'||e.key==='F')fs()})}
+else init();
+
+function init(){
+/* ───── 번역 (Chrome 내장 번역) ───── */
+const trs={};
+const avail=o=>Promise.race([Translator.availability(o),new Promise((_,rej)=>setTimeout(()=>rej(new Error('unavailable')),8000))]);
+async function getTr(dir,tries=4){if(trs[dir])return trs[dir];if(!('Translator'in self))throw new Error('no-translator');const d=DIRS[dir],o={sourceLanguage:d.src,targetLanguage:d.dst};
+ const a=await avail(o);if(a==='unavailable')throw new Error('unavailable');
+ if(a!=='available')status('번역 언어 자료를 내려받는 중… (처음 한 번만)');
+ /* 언어 자료를 막 내려받은 직후에는 만들기가 한 번 실패할 수 있어 몇 번 다시 시도한다 */
+ let err;for(let i=0;i<tries;i++){try{const t=await Translator.create({...o,monitor(m){m.addEventListener('downloadprogress',e=>status(`번역 언어 자료 내려받는 중… ${Math.round(e.loaded*100)}%`))}});
+   if(a!=='available')status('번역 준비가 끝났습니다.');return trs[dir]=t}catch(e){err=e;if(i<tries-1)await new Promise(r=>setTimeout(r,2500))}}
+ throw err}
+let builtinBad=false,engineNow='';
+async function google(text,dir){const d=DIRS[dir],r=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${d.src}&tl=${d.dst}&dt=t`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'q='+encodeURIComponent(text)});
+ if(!r.ok)throw new Error('Google 번역 응답 '+r.status);const j=await r.json();return j[0].map(a=>a[0]).join('').trim()}
+function setEngine(n){if(engineNow!==n){engineNow=n;$('#engNow').textContent='지금 사용 중: '+n}}
+async function translate(text,dir){
+ if(C.engine!=='google'&&!builtinBad){try{const t=await getTr(dir,C.engine==='builtin'?4:1),o=(await t.translate(text)).trim();setEngine('Chrome 내장 번역');return o}catch(e){if(C.engine==='builtin')throw e;builtinBad=true;status(running?'듣는 중 — '+D().label:'준비되었습니다. 「통역 시작」을 누르세요.')}}
+ const o=await google(text,dir);setEngine('Google 웹 번역');return o}
+async function checkEngine(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,miss=[];if(!SR)miss.push('음성 인식');if(C.engine==='builtin'&&!('Translator'in self))miss.push('번역');
+ if(/Electron/.test(navigator.userAgent))return status('동시통역은 Chrome 에서 열어야 합니다. 앱의 「동시통역」 버튼을 누르면 Chrome 으로 열립니다.',1);
+ if(miss.length)return status(`이 브라우저에는 ${miss.join(' · ')} 기능이 없습니다. 최신 Chrome(138 이상)에서 열어 주세요.`,1);
+ if(C.engine!=='builtin')return status('준비되었습니다. 「통역 시작」을 누르세요.');
+ try{const a=await avail({sourceLanguage:D().src,targetLanguage:D().dst}).catch(()=>'unavailable');status(a==='available'?'준비되었습니다. 「통역 시작」을 누르세요.':a==='unavailable'?'이 브라우저에서는 한국어⇄일본어 번역을 쓸 수 없습니다. Google Chrome 최신 버전에서 열어 주세요.':'준비되었습니다. 처음 시작할 때 번역 언어 자료를 내려받습니다.',a==='unavailable')}catch(e){status('번역 기능을 확인하지 못했습니다: '+e.message,1)}}
+
+/* ───── 음성으로 읽기 ───── */
+const q=[];let speaking=false;const pref=v=>/Kyoko|O-ren|Yuna|유나|Google/i.test(v.name)?2:/Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley/i.test(v.name)?0:1;
+function voices(){const lang=D().tts,vs=speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith(lang)).sort((a,b)=>pref(b)-pref(a)),sel=$('#voice');sel.innerHTML='';
+ if(!vs.length){const o=document.createElement('option');o.textContent=(lang==='ja'?'일본어':'한국어')+' 음성이 설치되어 있지 않습니다';sel.appendChild(o);return}
+ vs.forEach(v=>{const o=document.createElement('option');o.value=v.name;o.textContent=v.name+(v.localService?'':' (온라인)');sel.appendChild(o)});if(vs.some(v=>v.name===C.voice[lang]))sel.value=C.voice[lang];else C.voice[lang]=vs[0].name}
+function speak(text,lang){if(!C.tts||!text)return;q.push({text,lang});while(q.length>2)q.shift();if(!speaking)nextSpeak()}
+function nextSpeak(){const it=q.shift();if(!it){speaking=false;if(micPaused){micPaused=false;if(running)startRec()}return}
+ speaking=true;const u=new SpeechSynthesisUtterance(it.text);u.lang=it.lang==='ja'?'ja-JP':'ko-KR';const v=speechSynthesis.getVoices().find(v=>v.name===C.voice[it.lang]);if(v)u.voice=v;u.rate=C.rate;u.volume=C.vol;
+ u.onend=u.onerror=()=>nextSpeak();if(C.pauseMic&&running&&!micPaused){micPaused=true;try{rec.abort()}catch(e){}}speechSynthesis.speak(u)}
+
+/* ───── 통역 흐름 ───── */
+function logLine(e){const p=document.createElement('p');const i=document.createElement('i');i.textContent=e.src;p.append(i,document.createTextNode(e.dst||'…'));e.el=p;const L=$('#log');L.appendChild(p);L.scrollTop=L.scrollHeight}
+async function finalize(text,dir){if(!text)return;const e={src:text,dst:'',dir,t:new Date()};entries.push(e);interim=null;logLine(e);render();
+ try{e.dst=await translate(text,dir)}catch(err){e.dst='';status(trErr(err),1)}
+ if(e.el)e.el.lastChild.textContent=e.dst||'(번역 실패)';render();speak(e.dst,DIRS[dir].tts)}
+const trErr=e=>e.message==='no-translator'?'이 브라우저에는 번역 기능이 없습니다. 최신 Chrome 에서 열어 주세요.':e.message==='unavailable'?'이 Chrome 에서는 한국어⇄일본어 번역을 쓸 수 없습니다.':'번역 오류: '+e.message;
+let itTimer=null,itSeq=0;
+function setInterim(text){text=text.trim();if(!text){if(interim){interim=null;render()}return}interim={src:text,dst:interim?interim.dst:''};render();
+ clearTimeout(itTimer);const my=++itSeq,dir=C.dir;itTimer=setTimeout(async()=>{try{const d=await translate(text,dir);if(my===itSeq&&interim){interim.dst=d;render()}}catch(e){}},C.engine==='builtin'?350:700)}
+function startRec(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;const dir=C.dir;rec=new SR();rec.lang=DIRS[dir].rec;rec.continuous=true;rec.interimResults=true;
+ rec.onresult=ev=>{let it='';for(let i=ev.resultIndex;i<ev.results.length;i++){const r=ev.results[i];if(r.isFinal){itSeq++;finalize(r[0].transcript.trim(),dir)}else it+=r[0].transcript}setInterim(it)};
+ rec.onerror=ev=>{if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){stop();status('마이크 사용이 허용되지 않았습니다. 주소창의 자물쇠에서 마이크를 허용해 주세요.',1)}
+  else if(ev.error==='network')status('음성 인식 서버에 연결할 수 없습니다. 인터넷 연결을 확인해 주세요.',1);else if(ev.error==='audio-capture'){stop();status('마이크를 찾을 수 없습니다.',1)}};
+ const me=rec;rec.onend=()=>{if(running&&!micPaused&&rec===me)setTimeout(()=>{if(running&&!micPaused&&rec===me)startRec()},200)};
+ try{rec.start();status('듣는 중 — '+DIRS[dir].label)}catch(e){}}
+async function start(){if(!(window.SpeechRecognition||window.webkitSpeechRecognition))return status('이 브라우저에는 음성 인식 기능이 없습니다. Chrome 에서 열어 주세요.',1);
+ if(C.engine==='builtin'){try{await getTr(C.dir)}catch(e){status(trErr(e),1)}}
+ running=true;micPaused=false;startRec();ui()}
+function stop(){running=false;micPaused=false;try{rec&&rec.abort()}catch(e){}rec=null;interim=null;speechSynthesis.cancel();q.length=0;speaking=false;status('정지했습니다.');ui();render()}
+function setDir(d){if(C.dir===d)return;C.dir=d;interim=null;if(running){try{rec.abort()}catch(e){}startRec()}else checkEngine();ui();render()}
+
+/* ───── 화면 ───── */
+function choice(sel,list,k,fn){const b=$(sel);b.innerHTML='';list.forEach(([v,l])=>{const e=document.createElement('button');e.textContent=l;if(C[k]===v)e.className='on';e.onclick=()=>{fn?fn(v):(C[k]=v,ui(),render())};b.appendChild(e)})}
+function ui(){choice('#dirs',[['kj','한국어 → 日本語'],['jk','日本語 → 한국어']],'dir',setDir);
+ choice('#engs',[['auto','자동'],['builtin','Chrome 내장'],['google','Google 웹']],'engine',v=>{C.engine=v;builtinBad=false;ui();checkEngine()});
+ choice('#shows',[['both','원문+통역'],['dst','통역만'],['src','원문만']],'show');choice('#poss',[['top','위'],['center','가운데'],['bottom','아래']],'pos');
+ choice('#bgs',[['green','초록 (크로마키)'],['blue','파랑'],['black','검정 (루마키)'],['dark','어두운 남색']],'bg');
+ $$('[data-k]').forEach(e=>{const v=C[e.dataset.k];if(e.type==='checkbox')e.checked=!!v;else e.value=v;const o=e.parentElement.querySelector('output');if(o)o.textContent=v});
+ $('#start').textContent=running?'■ 통역 정지':'🎙 통역 시작';$('#start').className=(running?'live':'pri')+' sec';voices();
+ try{localStorage.setItem(KEY,JSON.stringify(C))}catch(e){}}
+$$('[data-k]').forEach(e=>e.addEventListener('input',()=>{C[e.dataset.k]=e.type==='checkbox'?e.checked:e.type==='range'?+e.value:e.value;ui();render()}));
+$('#voice').onchange=e=>{C.voice[D().tts]=e.target.value;ui()};
+$('#start').onclick=()=>running?stop():start();
+$('#manual').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();const t=e.target.value.trim();e.target.value='';finalize(t,C.dir)}});
+$('#clear').onclick=()=>{entries=[];interim=null;$('#log').innerHTML='';render()};
+$('#saveLog').onclick=()=>{if(!entries.length)return;const txt=entries.map(e=>`[${e.t.toLocaleTimeString('ko-KR')}] ${e.src}\n→ ${e.dst}`).join('\n\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+ a.download=`야마가타우리교회_통역기록_${new Date().toISOString().slice(0,10)}.txt`;a.click()};
+$('#openOut').onclick=()=>{if(outWin&&!outWin.closed){outWin.focus();return}outWin=window.open('interpret.html?out','yamagata-interpret-out','width=1280,height=720');if(!outWin)status('팝업이 막혀 있습니다. 주소창 오른쪽에서 팝업을 허용해 주세요.',1)};
+$('#full').onclick=()=>document.fullscreenElement?document.exitFullscreen():$('#view').requestFullscreen();
+addEventListener('message',e=>{if(e.data&&e.data.type==='int-ready')render()});
+addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='1')setDir('kj');else if(e.key==='2')setDir('jk')});
+speechSynthesis.onvoiceschanged=voices;
+ui();render();checkEngine();
+}
+</script>
+</body>
+</html>
